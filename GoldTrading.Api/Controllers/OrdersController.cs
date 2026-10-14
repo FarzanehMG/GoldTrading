@@ -1,5 +1,6 @@
 ﻿using GoldTrading.Application.Features.Orders.Commands;
 using GoldTrading.Application.Features.Orders.Handlers;
+using GoldTrading.Application.Features.Orders.Queries;
 using GoldTrading.Application.Features.Orders.Response;
 using Microsoft.AspNetCore.Mvc;
 

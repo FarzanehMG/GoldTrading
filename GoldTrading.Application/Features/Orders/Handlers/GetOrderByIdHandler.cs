@@ -1,5 +1,5 @@
 ﻿using GoldTrading.Application.Abstractions;
-using GoldTrading.Application.Features.Orders.Commands;
+using GoldTrading.Application.Features.Orders.Queries;
 using GoldTrading.Application.Features.Orders.Response;
 
 namespace GoldTrading.Application.Features.Orders.Handlers;

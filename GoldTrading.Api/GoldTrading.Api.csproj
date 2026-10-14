@@ -7,11 +7,13 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.19" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="10.3.0" />
+    <PackageReference Include="Swashbuckle.AspNetCore.Filters" Version="10.0.1" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\GoldTrading.Application\GoldTrading.Application.csproj" />
+    <ProjectReference Include="..\GoldTrading.Infrastructure\GoldTrading.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

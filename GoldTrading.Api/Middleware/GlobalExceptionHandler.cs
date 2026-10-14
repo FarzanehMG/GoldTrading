@@ -1,4 +1,5 @@
-﻿using GoldTrading.Domain.Common;
+﻿using FluentValidation;
+using GoldTrading.Domain.Common;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 
@@ -9,26 +10,44 @@ public sealed class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logge
     public async ValueTask<bool> TryHandleAsync(
         HttpContext context, Exception exception, CancellationToken ct)
     {
-        var (status, title) = exception switch
+        ProblemDetails problem;
+
+        switch (exception)
         {
-            DomainException => (StatusCodes.Status422UnprocessableEntity, "Business rule violation"),
-            _ => (StatusCodes.Status500InternalServerError, "Unexpected error")
-        };
+            case ValidationException validationException:
+                var errors = validationException.Errors
+                    .GroupBy(e => e.PropertyName)
+                    .ToDictionary(g => g.Key, g => g.Select(e => e.ErrorMessage).ToArray());
 
-        if (status == StatusCodes.Status500InternalServerError)
-            logger.LogError(exception, "Unhandled exception");
+                problem = new ValidationProblemDetails(errors)
+                {
+                    Status = StatusCodes.Status400BadRequest,
+                    Title = "Validation failed"
+                };
+                break;
 
-        var problem = new ProblemDetails
-        {
-            Status = status,
-            Title = title,
-            Detail = status == StatusCodes.Status500InternalServerError
-                ? "An unexpected error occurred."
-                : exception.Message
-        };
+            case DomainException:
+                problem = new ProblemDetails
+                {
+                    Status = StatusCodes.Status422UnprocessableEntity,
+                    Title = "Business rule violation",
+                    Detail = exception.Message
+                };
+                break;
 
-        context.Response.StatusCode = status;
-        await context.Response.WriteAsJsonAsync(problem, ct);
+            default:
+                logger.LogError(exception, "Unhandled exception");
+                problem = new ProblemDetails
+                {
+                    Status = StatusCodes.Status500InternalServerError,
+                    Title = "Unexpected error",
+                    Detail = "An unexpected error occurred."
+                };
+                break;
+        }
+
+        context.Response.StatusCode = problem.Status!.Value;
+        await context.Response.WriteAsJsonAsync(problem, problem.GetType(), cancellationToken: ct);
         return true;
     }
 }
