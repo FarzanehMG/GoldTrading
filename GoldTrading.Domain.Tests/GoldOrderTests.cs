@@ -85,4 +85,59 @@ public class GoldOrderTests
 
         act.Should().Throw<DomainException>();
     }
+
+    [Fact]
+    public void ReplaceTags_ReplacesExistingTags_AndIgnoresDuplicates()
+    {
+        var order = CreateValidOrder();
+        order.ReplaceTags(new[] { Tag.Create("پس‌انداز_بلندمدت") });
+
+        order.ReplaceTags(new[]
+        {
+        Tag.Create("نوسان‌گیری_روزانه"),
+        Tag.Create("نوسان‌گیری_روزانه"),
+        Tag.Create("تسویه_شمش")
+    });
+
+        order.Tags.Should().HaveCount(2);
+        order.Tags.Should().NotContain(Tag.Create("پس‌انداز_بلندمدت"));
+    }
+
+    [Fact]
+    public void ReplaceTags_WithTooManyTags_Throws_AndKeepsOldTags()
+    {
+        var order = CreateValidOrder();
+        order.ReplaceTags(new[] { Tag.Create("قدیمی") });
+        var tooMany = Enumerable.Range(1, GoldOrder.MaxTagsPerOrder + 1)
+            .Select(i => Tag.Create($"tag{i}"));
+
+        var act = () => order.ReplaceTags(tooMany);
+
+        act.Should().Throw<DomainException>();
+        order.Tags.Should().ContainSingle().Which.Should().Be(Tag.Create("قدیمی"));
+    }
+
+    [Fact]
+    public void EditingTagsAndNote_DoesNotChangeFinancialFields()
+    {
+        var order = CreateValidOrder();
+        var totalBefore = order.TotalAmount;
+        var weightBefore = order.Weight;
+
+        order.ReplaceTags(new[] { Tag.Create("صندوق_طلای_فیزیکی") });
+        order.UpdateNote("خرید برای پس‌انداز");
+
+        order.TotalAmount.Should().Be(totalBefore);
+        order.Weight.Should().Be(weightBefore);
+    }
+
+    [Fact]
+    public void UpdateNote_WithTooLongNote_Throws()
+    {
+        var order = CreateValidOrder();
+
+        var act = () => order.UpdateNote(new string('x', GoldOrder.MaxNoteLength + 1));
+
+        act.Should().Throw<DomainException>();
+    }
 }

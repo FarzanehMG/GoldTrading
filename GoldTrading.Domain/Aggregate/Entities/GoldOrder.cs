@@ -11,15 +11,46 @@ namespace GoldTrading.Domain.Aggregate.Entities;
 
 public sealed class GoldOrder
 {
+    #region Identity
+
     public Guid Id { get; }
     public Guid UserId { get; }
     public OrderType Type { get; }
+
+    #endregion
+
+    #region Order Details
+
     public GoldWeight Weight { get; }
     public Money UnitPrice { get; }
     public Money Fee { get; }
     public Money TotalAmount { get; }
+
+    #endregion
+
+    #region Status and Lifecycle
+
     public OrderStatus Status { get; private set; }
     public DateTime CreatedAtUtc { get; }
+
+    #endregion
+
+    #region Notes
+
+    public const int MaxNoteLength = 500;
+    public string? UserNote { get; private set; }
+
+    #endregion
+
+    #region Tags
+
+    public const int MaxTagsPerOrder = 10;
+
+    private readonly HashSet<Tag> _tags = new();
+
+    public IReadOnlyCollection<Tag> Tags => _tags;
+
+    #endregion
 
     private GoldOrder(
         Guid id, Guid userId, GoldWeight weight,
@@ -60,5 +91,29 @@ public sealed class GoldOrder
             throw new DomainException($"Only pending orders can be settled. Current status: {Status}.");
 
         Status = OrderStatus.Settled;
+    }
+
+    public void ReplaceTags(IEnumerable<Tag> tags)
+    {
+        ArgumentNullException.ThrowIfNull(tags);
+
+        var newTags = tags.ToHashSet();
+
+        if (newTags.Count > MaxTagsPerOrder)
+            throw new DomainException($"An order cannot have more than {MaxTagsPerOrder} tags.");
+
+        _tags.Clear();
+        foreach (var tag in newTags)
+            _tags.Add(tag);
+    }
+
+    public void UpdateNote(string? note)
+    {
+        var trimmed = string.IsNullOrWhiteSpace(note) ? null : note.Trim();
+
+        if (trimmed is { Length: > MaxNoteLength })
+            throw new DomainException($"Note cannot exceed {MaxNoteLength} characters.");
+
+        UserNote = trimmed;
     }
 }
