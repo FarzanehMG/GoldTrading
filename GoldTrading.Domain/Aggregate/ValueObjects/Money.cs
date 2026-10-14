@@ -1,9 +1,4 @@
 ﻿using GoldTrading.Domain.Common;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace GoldTrading.Domain.Aggregate.ValueObjects;
 
@@ -17,10 +12,7 @@ public sealed record Money
 
     public static Money Of(decimal amount)
     {
-        if (amount < 0)
-            throw new DomainException("Money cannot be negative.");
-
-        return new Money(amount);
+        return amount < 0 ? throw new DomainException("Money cannot be negative.") : new Money(amount);
     }
 
     public bool IsPositive => Amount > 0;
