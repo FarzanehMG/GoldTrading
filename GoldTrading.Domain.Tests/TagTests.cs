@@ -1,11 +1,6 @@
 ﻿using FluentAssertions;
 using GoldTrading.Domain.Aggregate.ValueObjects;
 using GoldTrading.Domain.Common;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace GoldTrading.Domain.Tests;
 
