@@ -1,24 +1,23 @@
-﻿using GoldTrading.Application.Abstractions;
+﻿using FluentValidation;
+using GoldTrading.Application.Abstractions;
 using GoldTrading.Application.Features.Orders.Commands;
 using GoldTrading.Application.Features.Orders.Response;
 using GoldTrading.Domain.Aggregate.Entities;
 using GoldTrading.Domain.Aggregate.ValueObjects;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace GoldTrading.Application.Features.Orders.Handlers;
 
 public sealed class PlaceBuyOrderHandler(
     IOrderRepository orders,
     IWalletRepository wallets,
-    IClock clock)
+    IClock clock,
+    IValidator<PlaceBuyOrderCommand> validator)
 {
     public async Task<PlaceBuyOrderResult> HandleAsync(
         PlaceBuyOrderCommand command, CancellationToken ct = default)
     {
+        await validator.ValidateAndThrowAsync(command, ct);
+
         var now = clock.UtcNow;
 
         var order = GoldOrder.PlaceBuy(

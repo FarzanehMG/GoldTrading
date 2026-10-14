@@ -2,11 +2,6 @@
 using GoldTrading.Infrastructure.Common;
 using GoldTrading.Infrastructure.Persistence;
 using Microsoft.Extensions.DependencyInjection;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace GoldTrading.Infrastructure.DI;
 

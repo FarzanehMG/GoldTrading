@@ -2,16 +2,13 @@
 using GoldTrading.Domain.Aggregate.Events;
 using GoldTrading.Domain.Aggregate.ValueObjects;
 using GoldTrading.Domain.Common;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace GoldTrading.Domain.Aggregate.Entities;
 
 public sealed class GoldOrder
 {
+    #region Properties
+
     #region Identity
 
     public Guid Id { get; }
@@ -53,6 +50,8 @@ public sealed class GoldOrder
 
     #endregion
 
+    #endregion
+
     #region Domain Events
 
     private readonly List<IDomainEvent> _domainEvents = new();
@@ -63,9 +62,16 @@ public sealed class GoldOrder
 
     #endregion
 
+    #region Constructor
+
     private GoldOrder(
-        Guid id, Guid userId, GoldWeight weight,
-        Money unitPrice, Money fee, Money totalAmount, DateTime createdAtUtc)
+        Guid id, 
+        Guid userId, 
+        GoldWeight weight,
+        Money unitPrice, 
+        Money fee, 
+        Money totalAmount,
+        DateTime createdAtUtc)
     {
         Id = id;
         UserId = userId;
@@ -77,6 +83,10 @@ public sealed class GoldOrder
         Status = OrderStatus.Pending;
         CreatedAtUtc = createdAtUtc;
     }
+
+    #endregion
+
+    #region Methods
 
     public static GoldOrder PlaceBuy(
         Guid userId, GoldWeight weight, Money unitPrice, Money fee, DateTime nowUtc)
@@ -129,4 +139,6 @@ public sealed class GoldOrder
 
         UserNote = trimmed;
     }
+
+    #endregion
 }

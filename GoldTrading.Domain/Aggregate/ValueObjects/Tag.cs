@@ -1,9 +1,4 @@
 ﻿using GoldTrading.Domain.Common;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace GoldTrading.Domain.Aggregate.ValueObjects;
 
@@ -22,9 +17,6 @@ public sealed record Tag
         if (string.IsNullOrWhiteSpace(trimmed))
             throw new DomainException("Tag cannot be empty.");
 
-        if (trimmed.Length > MaxLength)
-            throw new DomainException($"Tag cannot exceed {MaxLength} characters.");
-
-        return new Tag(trimmed);
+        return trimmed.Length > MaxLength ? throw new DomainException($"Tag cannot exceed {MaxLength} characters.") : new Tag(trimmed);
     }
 }

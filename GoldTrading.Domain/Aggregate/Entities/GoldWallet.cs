@@ -1,18 +1,19 @@
 ﻿using GoldTrading.Domain.Aggregate.ValueObjects;
 using GoldTrading.Domain.Common;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace GoldTrading.Domain.Aggregate.Entities;
 
 public sealed class GoldWallet
 {
+    #region Properties
+
     public Guid Id { get; }
     public Guid UserId { get; }
     public GoldWeight Balance { get; private set; }
+
+    #endregion
+
+    #region Constructors
 
     private GoldWallet(Guid id, Guid userId)
     {
@@ -21,12 +22,15 @@ public sealed class GoldWallet
         Balance = GoldWeight.Zero;
     }
 
+    #endregion
+
+    #region Methods
+
     public static GoldWallet Open(Guid userId)
     {
-        if (userId == Guid.Empty)
-            throw new DomainException("UserId is required.");
-
-        return new GoldWallet(Guid.NewGuid(), userId);
+        return userId == Guid.Empty ? 
+            throw new DomainException("UserId is required.") : 
+            new GoldWallet(Guid.NewGuid(), userId);
     }
 
     public void Credit(GoldWeight weight)
@@ -36,4 +40,6 @@ public sealed class GoldWallet
 
         Balance = Balance.Add(weight);
     }
+
+    #endregion
 }
