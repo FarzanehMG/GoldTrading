@@ -1,9 +1,10 @@
-﻿using GoldTrading.Application.Abstractions;
-using GoldTrading.Application.Features.Orders.Handlers;
-using GoldTrading.Domain.Common;
-using GoldTrading.Infrastructure.Persistence;
-using FluentAssertions;
+﻿using FluentAssertions;
+using FluentValidation;
+using GoldTrading.Application.Abstractions;
 using GoldTrading.Application.Features.Orders.Commands;
+using GoldTrading.Application.Features.Orders.Handlers;
+using GoldTrading.Application.Features.Orders.Validators;
+using GoldTrading.Infrastructure.Persistence;
 
 namespace GoldTrading.Application.Tests;
 
@@ -19,7 +20,7 @@ public class PlaceBuyOrderHandlerTests
     private readonly PlaceBuyOrderHandler _handler;
 
     public PlaceBuyOrderHandlerTests() =>
-        _handler = new PlaceBuyOrderHandler(_orders, _wallets, new FixedClock());
+        _handler = new PlaceBuyOrderHandler(_orders, _wallets, new FixedClock(), new PlaceBuyOrderCommandValidator());
 
     private static PlaceBuyOrderCommand Command(Guid userId, decimal grams = 2.5m) =>
         new(userId, grams, 3_500_000m, 50_000m, ["پس‌انداز_بلندمدت"], "یادداشت");
@@ -48,15 +49,18 @@ public class PlaceBuyOrderHandlerTests
         result.WalletBalanceInGrams.Should().Be(2.5m);
     }
 
-    [Fact]
-    public async Task Handle_WithInvalidWeight_Throws_AndLeavesWalletUntouched()
+    [Theory]
+    [InlineData(0)]
+    [InlineData(-1)]
+    [InlineData(1.2345)]
+    public async Task Handle_WithInvalidWeight_ThrowsValidationException_AndLeavesWalletUntouched(double grams)
     {
         var userId = Guid.NewGuid();
         await _handler.HandleAsync(Command(userId, 1m));
 
-        var act = () => _handler.HandleAsync(Command(userId, 0m));
+        var act = () => _handler.HandleAsync(Command(userId, (decimal)grams));
 
-        await act.Should().ThrowAsync<DomainException>();
+        await act.Should().ThrowAsync<ValidationException>();
         var result = await _handler.HandleAsync(Command(userId, 1m));
         result.WalletBalanceInGrams.Should().Be(2m); 
     }
