@@ -7,6 +7,7 @@
   </Folder>
   <Folder Name="/Tests/">
     <Project Path="GoldTrading.Api.Tests/GoldTrading.Api.Tests.csproj" />
+    <Project Path="GoldTrading.Application.Tests/GoldTrading.Application.Tests.csproj" Id="ab9b4902-30f2-4aa6-92ae-12e4f9b953f0" />
     <Project Path="GoldTrading.Domain.Tests/GoldTrading.Domain.Tests.csproj" />
   </Folder>
 </Solution>

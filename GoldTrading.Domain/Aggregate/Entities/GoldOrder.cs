@@ -1,4 +1,5 @@
 ﻿using GoldTrading.Domain.Aggregate.Enums;
+using GoldTrading.Domain.Aggregate.Events;
 using GoldTrading.Domain.Aggregate.ValueObjects;
 using GoldTrading.Domain.Common;
 using System;
@@ -52,6 +53,16 @@ public sealed class GoldOrder
 
     #endregion
 
+    #region Domain Events
+
+    private readonly List<IDomainEvent> _domainEvents = new();
+
+    public IReadOnlyCollection<IDomainEvent> DomainEvents => _domainEvents;
+
+    public void ClearDomainEvents() => _domainEvents.Clear();
+
+    #endregion
+
     private GoldOrder(
         Guid id, Guid userId, GoldWeight weight,
         Money unitPrice, Money fee, Money totalAmount, DateTime createdAtUtc)
@@ -85,12 +96,14 @@ public sealed class GoldOrder
         return new GoldOrder(Guid.NewGuid(), userId, weight, unitPrice, fee, total, nowUtc);
     }
 
-    public void Settle()
+    public void Settle(DateTime nowUtc)
     {
         if (Status != OrderStatus.Pending)
             throw new DomainException($"Only pending orders can be settled. Current status: {Status}.");
 
         Status = OrderStatus.Settled;
+
+        _domainEvents.Add(new GoldPurchasedDomainEvent(Id, UserId, Weight, TotalAmount, nowUtc));
     }
 
     public void ReplaceTags(IEnumerable<Tag> tags)
